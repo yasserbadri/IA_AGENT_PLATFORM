@@ -1,0 +1,4 @@
+Ceci est un fichier d'exemple dans le répertoire partagé de la plateforme.
+L'agent peut le lire avec l'outil read_file en demandant le fichier "exemple.txt".
+
+Dépose ici tout fichier texte que tu veux que l'agent puisse lire dans ses missions.

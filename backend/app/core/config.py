@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # agents LLM plutôt que pour un moteur de recherche humain classique)
     TAVILY_API_KEY: str = ""
 
+    # Répertoire sandboxé où l'outil read_file va chercher ses fichiers.
+    # Chemin relatif : résolu depuis le dossier de travail du process
+    # (WORKDIR /app dans le conteneur Docker -> backend/data/ sur ta machine).
+    FILES_DIR: str = "data"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
