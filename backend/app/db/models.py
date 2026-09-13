@@ -26,6 +26,13 @@ class Mission(Base):
     status: Mapped[MissionStatus] = mapped_column(
         Enum(MissionStatus, name="mission_status"), default=MissionStatus.PENDING
     )
+    # Provider LLM utilisé pour exécuter cette mission : "mistral" (défaut),
+    # "openai", "grok" ou "gemini" — voir app/agent/providers/.
+    provider: Mapped[str] = mapped_column(String(20), nullable=False, default="mistral", server_default="mistral")
+    # Modèle précis à utiliser chez ce provider (ex: "gpt-4o" plutôt que
+    # "gpt-4o-mini"). Optionnel : si vide, le provider retombe sur son modèle
+    # par défaut (settings.*_MODEL) — voir app/agent/providers/.
+    model: Mapped[str | None] = mapped_column(String(80), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

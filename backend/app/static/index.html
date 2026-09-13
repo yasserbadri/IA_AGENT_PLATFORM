@@ -98,7 +98,137 @@
   }
   .composer textarea::placeholder { color: var(--text-dim); }
   .composer textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  .composer-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .composer-row { display: flex; align-items: center; margin-top: 10px; gap: 8px; }
+  .composer-row.create-row { justify-content: flex-end; }
+
+  .provider-select, .model-select {
+    background: var(--panel-alt); color: var(--text);
+    border: 1px solid var(--border); border-radius: 5px;
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.02em; padding: 8px 10px;
+    outline: none; cursor: pointer;
+  }
+  .provider-select { flex-shrink: 0; }
+  .provider-select:focus, .model-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .model-select { flex: 1; min-width: 0; }
+  .model-select:disabled { cursor: wait; opacity: 0.6; }
+  .model-hint {
+    font-family: var(--mono); font-size: 10.5px; color: var(--text-dim);
+    margin-top: 5px;
+  }
+  .model-hint.error { color: var(--red); }
+  .model-hint.verified { color: var(--green); }
+
+  /* ---------- Modale de test des modèles ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(6, 8, 11, 0.72); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal-panel {
+    width: 100%; max-width: 640px; max-height: min(80vh, 720px);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .modal-title { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+  .modal-title .provider-badge { margin-left: 8px; vertical-align: middle; }
+  .modal-close {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    font-size: 18px; line-height: 1; padding: 4px 6px; border-radius: 4px;
+  }
+  .modal-close:hover { color: var(--text); background: var(--panel-alt); }
+  .modal-summary {
+    padding: 12px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-summary .summary-ok { color: var(--green); font-weight: 600; }
+  .modal-summary .summary-fail { color: var(--red); font-weight: 600; }
+  .modal-body { overflow-y: auto; padding: 8px 12px; }
+  .modal-body::-webkit-scrollbar { width: 8px; }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .modal-loading {
+    padding: 40px 20px; text-align: center;
+    font-family: var(--mono); font-size: 12px; color: var(--text-muted);
+  }
+  .modal-loading .spin-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); margin-right: 8px; animation: breathe 1s ease-in-out infinite;
+  }
+
+  .model-result-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 10px; border-radius: 7px; margin-bottom: 2px;
+  }
+  .model-result-row:hover { background: var(--panel-alt); }
+  .model-result-icon { flex-shrink: 0; font-size: 13px; line-height: 1.5; margin-top: 1px; }
+  .model-result-row.ok .model-result-icon { color: var(--green); }
+  .model-result-row.fail .model-result-icon { color: var(--red); }
+  .model-result-main { flex: 1; min-width: 0; }
+  .model-result-name {
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--text);
+    word-break: break-word;
+  }
+  .model-result-row.fail .model-result-name { color: var(--text); }
+  .model-result-detail {
+    font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+    margin-top: 3px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap;
+  }
+  .model-result-row.fail .model-result-detail { color: var(--red); opacity: 0.85; }
+  .model-result-row.ok .model-result-detail { color: var(--text-muted); }
+  .model-result-badge {
+    flex-shrink: 0; font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 100px;
+    margin-top: 1px;
+  }
+  .model-result-row.ok .model-result-badge { color: var(--green); background: var(--green-dim); }
+  .model-result-row.fail .model-result-badge { color: var(--red); background: var(--red-dim); }
+
+  .status-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim);
+  }
+
+  .provider-status-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .status-chip {
+    display: flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    padding: 3px 9px; border-radius: 100px;
+    background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);
+    cursor: default;
+  }
+  .status-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .status-chip.checking .dot { background: var(--amber); animation: breathe 1s ease-in-out infinite; }
+  .status-chip.ok { color: var(--green); border-color: rgba(74, 222, 128, 0.35); }
+  .status-chip.ok .dot { background: var(--green); box-shadow: 0 0 0 2px var(--green-dim); }
+  .status-chip.fail { color: var(--red); border-color: rgba(240, 85, 107, 0.35); }
+  .status-chip.fail .dot { background: var(--red); box-shadow: 0 0 0 2px var(--red-dim); }
+
+  .provider-badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 100px;
+    background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .provider-badge.mistral { color: #f5a623; border-color: rgba(245, 166, 35, 0.35); }
+  .provider-badge.openai { color: #74aa9c; border-color: rgba(116, 170, 156, 0.35); }
+  .provider-badge.grok { color: #dce1ea; border-color: rgba(220, 225, 234, 0.35); }
+  .provider-badge.gemini { color: #8ab4f8; border-color: rgba(138, 180, 248, 0.35); }
+
+  .model-badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+    padding: 2px 7px; border-radius: 100px;
+    background: transparent; color: var(--text-muted); border: 1px dashed var(--border);
+    white-space: nowrap;
+  }
 
   .btn {
     font-family: var(--mono); font-size: 11.5px; font-weight: 600;
@@ -318,6 +448,24 @@
     <div class="composer">
       <textarea id="new-prompt" placeholder="Décris la mission à confier à l'agent…"></textarea>
       <div class="composer-row">
+        <select id="new-provider" class="provider-select">
+          <option value="mistral">Mistral</option>
+          <option value="openai">OpenAI</option>
+          <option value="grok">Grok (xAI)</option>
+          <option value="gemini">Gemini</option>
+        </select>
+        <select id="new-model" class="model-select">
+          <option value="">Chargement des modèles…</option>
+        </select>
+        <button class="refresh-btn" id="test-models-btn" title="Tester réellement les modèles de ce provider">▶</button>
+      </div>
+      <div class="model-hint" id="model-hint"></div>
+      <div class="status-head">
+        <span>Statut des clés API</span>
+        <button class="refresh-btn" id="status-refresh-btn" title="Revérifier les clés API">⟳</button>
+      </div>
+      <div class="provider-status-row" id="provider-status-row"></div>
+      <div class="composer-row create-row">
         <button class="btn btn-primary" id="create-btn">Créer la mission</button>
       </div>
     </div>
@@ -330,6 +478,17 @@
       <div class="empty-sidebar">Chargement…</div>
     </div>
   </aside>
+
+  <div class="modal-overlay" id="model-test-modal" hidden>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="model-test-title">
+      <div class="modal-head">
+        <div class="modal-title" id="model-test-title">Test des modèles<span class="provider-badge" id="model-test-provider-badge"></span></div>
+        <button class="modal-close" id="model-test-close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-summary" id="model-test-summary"></div>
+      <div class="modal-body" id="model-test-body"></div>
+    </div>
+  </div>
 
   <main class="main">
     <div id="main-content">
@@ -353,6 +512,204 @@ let selectedId = null;
 let pollTimer = null;
 
 const STATUS_LABEL = { pending: "En attente", running: "En cours", done: "Terminée", failed: "Échec" };
+const PROVIDER_LABEL = { mistral: "Mistral", openai: "OpenAI", grok: "Grok", gemini: "Gemini" };
+
+// Rempli par loadProviders() au démarrage : { mistral: "mistral-small-latest", ... }
+let DEFAULT_MODELS = {};
+// Cache local des modèles déjà récupérés pour un provider, pour éviter de
+// rappeler /providers/{name}/models à chaque changement de sélection.
+// Une fois qu'un test réel a été lancé pour un provider, ce cache ne
+// contient plus que les modèles confirmés fonctionnels (voir
+// testModelsForCurrentProvider) — les modèles en échec disparaissent du
+// sélecteur plutôt que d'y rester en trompe-l'œil.
+const MODELS_BY_PROVIDER = {};
+// Providers pour lesquels la liste actuelle a été vérifiée par un vrai
+// appel de complétion (et pas seulement par GET /models) — sert à afficher
+// le badge "vérifié" même quand on revient sur ce provider via le cache.
+const VERIFIED_PROVIDERS = new Set();
+
+async function loadProviders() {
+  try {
+    const providers = await api("/providers/");
+    DEFAULT_MODELS = Object.fromEntries(providers.map(p => [p.name, p.default_model]));
+  } catch (e) {
+    // Pas bloquant : on retombe sur le comportement "modèle par défaut serveur".
+  }
+  await refreshModelOptions();
+}
+
+async function refreshModelOptions() {
+  const provider = document.getElementById("new-provider").value;
+  const modelSelect = document.getElementById("new-model");
+  const hint = document.getElementById("model-hint");
+  const defaultModel = DEFAULT_MODELS[provider];
+
+  if (MODELS_BY_PROVIDER[provider]) {
+    renderModelOptions(MODELS_BY_PROVIDER[provider], defaultModel, { verified: VERIFIED_PROVIDERS.has(provider) });
+    return;
+  }
+
+  modelSelect.disabled = true;
+  modelSelect.innerHTML = `<option value="">Chargement des modèles…</option>`;
+  hint.textContent = "";
+  hint.className = "model-hint";
+
+  try {
+    const res = await api(`/providers/${provider}/models`);
+    MODELS_BY_PROVIDER[provider] = res.models;
+    VERIFIED_PROVIDERS.delete(provider);
+    renderModelOptions(res.models, res.default_model || defaultModel);
+  } catch (e) {
+    // Clé API absente/invalide, provider injoignable... : on retombe sur le
+    // modèle par défaut configuré côté serveur plutôt que de bloquer la création.
+    modelSelect.innerHTML = `<option value="">Modèle par défaut du serveur</option>`;
+    modelSelect.disabled = false;
+    hint.textContent = `Liste des modèles indisponible pour ${PROVIDER_LABEL[provider] || provider} (clé API absente ou invalide ?). La mission utilisera le modèle par défaut du serveur.`;
+    hint.className = "model-hint error";
+  }
+}
+
+function renderModelOptions(models, defaultModel, opts = {}) {
+  const modelSelect = document.getElementById("new-model");
+  const hint = document.getElementById("model-hint");
+  modelSelect.disabled = false;
+
+  if (!models || models.length === 0) {
+    modelSelect.innerHTML = `<option value="">Aucun modèle vérifié fonctionnel</option>`;
+    hint.textContent = opts.verified
+      ? "Aucun des modèles testés n'a répondu correctement. Vérifie ta clé API ou réessaie."
+      : "";
+    hint.className = "model-hint error";
+    return;
+  }
+
+  modelSelect.innerHTML = models.map(m => {
+    const label = m === defaultModel ? `${m} (défaut)` : m;
+    return `<option value="${escapeHtml(m)}">${escapeHtml(label)}</option>`;
+  }).join("");
+
+  if (defaultModel && models.includes(defaultModel)) {
+    modelSelect.value = defaultModel;
+  }
+
+  if (opts.verified) {
+    hint.textContent = `✓ ${models.length} modèle${models.length > 1 ? "s" : ""} vérifié${models.length > 1 ? "s" : ""} fonctionnel${models.length > 1 ? "s" : ""} (testé${models.length > 1 ? "s" : ""} avec un appel réel).`;
+    hint.className = "model-hint verified";
+  } else {
+    hint.textContent = `${models.length} modèle${models.length > 1 ? "s" : ""} disponible${models.length > 1 ? "s" : ""} pour cette clé API.`;
+    hint.className = "model-hint";
+  }
+}
+
+function openModelTestModal() {
+  document.getElementById("model-test-modal").hidden = false;
+  document.addEventListener("keydown", closeModelTestModalOnEscape);
+}
+
+function closeModelTestModal() {
+  document.getElementById("model-test-modal").hidden = true;
+  document.removeEventListener("keydown", closeModelTestModalOnEscape);
+}
+
+function closeModelTestModalOnEscape(e) {
+  if (e.key === "Escape") closeModelTestModal();
+}
+
+document.getElementById("model-test-close").addEventListener("click", closeModelTestModal);
+document.getElementById("model-test-modal").addEventListener("click", (e) => {
+  if (e.target.id === "model-test-modal") closeModelTestModal();
+});
+
+async function testModelsForCurrentProvider() {
+  const provider = document.getElementById("new-provider").value;
+  const btn = document.getElementById("test-models-btn");
+  const badge = document.getElementById("model-test-provider-badge");
+  const summary = document.getElementById("model-test-summary");
+  const body = document.getElementById("model-test-body");
+
+  badge.textContent = PROVIDER_LABEL[provider] || provider;
+  badge.className = `provider-badge ${provider}`;
+  summary.innerHTML = "";
+  body.innerHTML = `<div class="modal-loading"><span class="spin-dot"></span>Appels réels en cours vers ${PROVIDER_LABEL[provider] || provider}…</div>`;
+  openModelTestModal();
+
+  btn.disabled = true;
+  btn.classList.add("spinning");
+
+  try {
+    const res = await api(`/providers/${provider}/models/test`);
+    const okModels = res.results.filter(r => r.ok).map(r => r.model);
+    const okCount = okModels.length;
+    const failCount = res.results.length - okCount;
+    summary.innerHTML = `<span class="summary-ok">${okCount} fonctionnel${okCount > 1 ? "s" : ""}</span>
+      <span>·</span>
+      <span class="summary-fail">${failCount} échec${failCount > 1 ? "s" : ""}</span>
+      <span>·</span>
+      <span>${res.results.length} testé${res.results.length > 1 ? "s" : ""} au total</span>`;
+
+    // Le sélecteur ne doit proposer que des modèles confirmés fonctionnels :
+    // on remplace le cache local par la liste filtrée et on le re-rend tout
+    // de suite, pour que fermer la modale montre déjà le résultat.
+    MODELS_BY_PROVIDER[provider] = okModels;
+    VERIFIED_PROVIDERS.add(provider);
+    renderModelOptions(okModels, DEFAULT_MODELS[provider], { verified: true });
+
+    if (res.results.length === 0) {
+      body.innerHTML = `<div class="modal-loading">Aucun modèle à tester pour ce provider.</div>`;
+      return;
+    }
+
+    // Modèles fonctionnels en premier, pour repérer les bons choix d'un coup d'œil.
+    const sorted = [...res.results].sort((a, b) => (a.ok === b.ok ? 0 : a.ok ? -1 : 1));
+    body.innerHTML = sorted.map(r => `
+      <div class="model-result-row ${r.ok ? "ok" : "fail"}">
+        <span class="model-result-icon">${r.ok ? "✓" : "✕"}</span>
+        <div class="model-result-main">
+          <div class="model-result-name">${escapeHtml(r.model)}</div>
+          ${r.detail ? `<div class="model-result-detail">${escapeHtml(r.detail)}</div>` : ""}
+        </div>
+        <span class="model-result-badge">${r.ok ? "OK" : "Échec"}</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    summary.innerHTML = "";
+    body.innerHTML = `<div class="modal-loading" style="color: var(--red);">Impossible de tester les modèles : ${escapeHtml(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("spinning");
+  }
+}
+
+document.getElementById("test-models-btn").addEventListener("click", testModelsForCurrentProvider);
+
+function statusChip(name, state, info) {
+  const label = PROVIDER_LABEL[name] || name;
+  let title = "Vérification en cours…";
+  if (state === "ok") title = `${info.model_count} modèle${info.model_count > 1 ? "s" : ""} disponible${info.model_count > 1 ? "s" : ""}`;
+  if (state === "fail") title = info.error || "Clé API invalide ou provider injoignable";
+  return `<span class="status-chip ${state}" title="${escapeHtml(title)}"><span class="dot"></span>${escapeHtml(label)}</span>`;
+}
+
+async function checkProviderStatus() {
+  const row = document.getElementById("provider-status-row");
+  const btn = document.getElementById("status-refresh-btn");
+  const names = Object.keys(PROVIDER_LABEL);
+  row.innerHTML = names.map(name => statusChip(name, "checking")).join("");
+  btn.classList.add("spinning");
+  try {
+    // Un seul appel : le backend vérifie les 4 providers EN MÊME TEMPS
+    // (asyncio.gather côté serveur), pas les uns après les autres.
+    const statuses = await api("/providers/status");
+    row.innerHTML = statuses.map(s => statusChip(s.name, s.ok ? "ok" : "fail", s)).join("");
+    // Les providers dont la vérification vient de réussir ont déjà leurs
+    // modèles en cache côté serveur : pas besoin de les rappeler quand
+    // l'utilisateur les sélectionne dans le composer juste après.
+  } catch (e) {
+    row.innerHTML = `<span class="model-hint error">Impossible de vérifier les clés API : ${escapeHtml(e.message)}</span>`;
+  } finally {
+    setTimeout(() => btn.classList.remove("spinning"), 400);
+  }
+}
 
 function showToast(msg, isError = false) {
   toastEl.textContent = msg;
@@ -370,6 +727,16 @@ function shortId(id) { return id ? id.slice(0, 8) : "—"; }
 
 function pill(status) {
   return `<span class="pill ${status}">${STATUS_LABEL[status] || status}</span>`;
+}
+
+function providerBadge(provider) {
+  const label = PROVIDER_LABEL[provider] || provider;
+  return `<span class="provider-badge ${provider}">${label}</span>`;
+}
+
+function modelBadge(model) {
+  if (!model) return "";
+  return `<span class="model-badge" title="Modèle utilisé pour cette mission">${escapeHtml(model)}</span>`;
 }
 
 async function api(path, options = {}) {
@@ -410,7 +777,7 @@ function renderMissionsList() {
   }
   missionsListEl.innerHTML = missions.map(m => `
     <button class="mission-card ${m.id === selectedId ? "active" : ""}" data-id="${m.id}">
-      <div class="mc-top">${pill(m.status)}</div>
+      <div class="mc-top">${pill(m.status)}${providerBadge(m.provider)}${modelBadge(m.model)}</div>
       <div class="mc-prompt">${escapeHtml(m.prompt)}</div>
       <div class="mc-meta">${shortId(m.id)} · ${fmtTime(m.created_at)}</div>
     </button>
@@ -451,6 +818,8 @@ async function renderMissionDetail(id, { silent = false } = {}) {
       <div class="mhead">
         <div class="mhead-top">
           ${pill(mission.status)}
+          ${providerBadge(mission.provider)}
+          ${modelBadge(mission.model)}
           <span class="mhead-id">${mission.id}</span>
         </div>
         <p class="mhead-prompt">${escapeHtml(mission.prompt)}</p>
@@ -540,9 +909,9 @@ async function launchRun(id) {
   if (btn) { btn.disabled = true; btn.textContent = "Exécution en cours…"; }
   try {
     await api(`/missions/${id}/run`, { method: "POST" });
-    showToast("Mission terminée.");
+    showToast("Mission lancée — suivi en direct ci-dessous.");
   } catch (e) {
-    showToast("L'agent a échoué : " + e.message, true);
+    showToast("Impossible de lancer la mission : " + e.message, true);
   } finally {
     await loadMissions({ silent: true });
   }
@@ -559,11 +928,13 @@ function stopPolling() {
 document.getElementById("create-btn").addEventListener("click", async () => {
   const ta = document.getElementById("new-prompt");
   const prompt = ta.value.trim();
+  const provider = document.getElementById("new-provider").value;
+  const model = document.getElementById("new-model").value.trim() || null;
   if (!prompt) { showToast("Écris une mission avant de la créer.", true); return; }
   const btn = document.getElementById("create-btn");
   btn.disabled = true;
   try {
-    const mission = await api("/missions/", { method: "POST", body: JSON.stringify({ prompt }) });
+    const mission = await api("/missions/", { method: "POST", body: JSON.stringify({ prompt, provider, model }) });
     ta.value = "";
     await loadMissions({ silent: true });
     await selectMission(mission.id);
@@ -575,8 +946,12 @@ document.getElementById("create-btn").addEventListener("click", async () => {
   }
 });
 
+document.getElementById("new-provider").addEventListener("change", refreshModelOptions);
 document.getElementById("refresh-btn").addEventListener("click", () => loadMissions());
+document.getElementById("status-refresh-btn").addEventListener("click", () => checkProviderStatus());
 
+loadProviders();
+checkProviderStatus();
 loadMissions();
 </script>
 </body>

@@ -21,6 +21,26 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: str = ""
     MISTRAL_MODEL: str = "mistral-small-latest"  # le moins cher, largement suffisant pour dev/tests
 
+    # OpenAI (platform.openai.com). Vérifie platform.openai.com/docs/models
+    # pour le modèle le plus récent/économique — ça change vite.
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # xAI Grok (console.x.ai). API 100% compatible OpenAI (même SDK, juste
+    # base_url + clé différents) — voir docs.x.ai.
+    XAI_API_KEY: str = ""
+    XAI_MODEL: str = "grok-4-0709"
+
+    # Google Gemini (aistudio.google.com), via la couche de compatibilité
+    # OpenAI officielle de Google (mêmes SDK/format que ci-dessus, endpoint
+    # différent) — voir ai.google.dev/gemini-api/docs/openai. Vérifie le nom
+    # de modèle courant sur ai.google.dev/gemini-api/docs/models.
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.7-flash"
+
+    # Provider utilisé par défaut si une mission n'en précise pas.
+    DEFAULT_LLM_PROVIDER: str = "mistral"
+
     # Recherche web (Tavily — tier gratuit 1000 requêtes/mois, conçu pour les
     # agents LLM plutôt que pour un moteur de recherche humain classique)
     TAVILY_API_KEY: str = ""

@@ -13,7 +13,8 @@ router = APIRouter(prefix="/missions", tags=["missions"])
 
 @router.post("/", response_model=MissionRead, status_code=201)
 async def create_mission(payload: MissionCreate, db: AsyncSession = Depends(get_db)) -> Mission:
-    mission = Mission(prompt=payload.prompt)
+    model = (payload.model or "").strip() or None
+    mission = Mission(prompt=payload.prompt, provider=payload.provider, model=model)
     db.add(mission)
     await db.commit()
     await db.refresh(mission)
