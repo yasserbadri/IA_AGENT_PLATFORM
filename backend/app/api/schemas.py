@@ -86,6 +86,13 @@ class ProviderStatus(BaseModel):
     error: str | None = None
 
 
+class UploadedFileRead(BaseModel):
+    filename: str
+    size_bytes: int
+    content_type: str | None = None
+    uploaded_at: datetime
+
+
 class RunRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

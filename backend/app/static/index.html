@@ -191,6 +191,31 @@
   .model-result-row.ok .model-result-badge { color: var(--green); background: var(--green-dim); }
   .model-result-row.fail .model-result-badge { color: var(--red); background: var(--red-dim); }
 
+  .files-box { margin-top: 12px; }
+  .files-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .files-upload-btn { margin-top: 8px; width: 100%; padding: 7px 10px; font-size: 10.5px; }
+  .files-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .files-list:empty { margin-top: 0; }
+  .file-chip {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10.5px;
+    padding: 3px 6px 3px 9px; border-radius: 100px;
+    background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);
+    cursor: pointer; max-width: 100%;
+  }
+  .file-chip:hover { color: var(--text); border-color: var(--text-muted); }
+  .file-chip .file-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
+  .file-chip .file-chip-del {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    font-size: 12px; line-height: 1; padding: 2px 3px; border-radius: 3px;
+  }
+  .file-chip .file-chip-del:hover { color: var(--red); }
+  .files-hint { margin-top: 6px; font-size: 10px; color: var(--text-dim); line-height: 1.4; }
+
   .status-head {
     display: flex; align-items: center; justify-content: space-between;
     margin-top: 12px; font-family: var(--mono); font-size: 10.5px;
@@ -198,6 +223,32 @@
   }
 
   .provider-status-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .status-chip.fail { cursor: pointer; }
+  .status-chip.fail:hover { border-color: var(--red); }
+
+  .status-error-box {
+    margin-top: 8px; padding: 9px 10px; border-radius: 6px;
+    background: var(--red-dim); border: 1px solid rgba(240, 85, 107, 0.3);
+    font-family: var(--mono); font-size: 10.5px; color: var(--text-dim); line-height: 1.5;
+  }
+  .status-error-box strong { color: var(--red); }
+  .status-error-box pre {
+    margin: 5px 0 0; white-space: pre-wrap; overflow-wrap: anywhere;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim);
+  }
+
+  .error-details { margin-top: 5px; }
+  .error-details summary {
+    cursor: pointer; color: var(--red); opacity: 0.85;
+    font-size: 10.5px; user-select: none;
+  }
+  .error-details summary:hover { opacity: 1; }
+  .error-details pre {
+    margin: 5px 0 0; padding: 7px 8px; border-radius: 5px;
+    background: var(--panel-alt); border: 1px solid var(--border);
+    white-space: pre-wrap; overflow-wrap: anywhere;
+    font-family: var(--mono); font-size: 10px; color: var(--text-dim); line-height: 1.5;
+  }
   .status-chip {
     display: flex; align-items: center; gap: 5px;
     font-family: var(--mono); font-size: 10.5px; font-weight: 500;
@@ -447,6 +498,18 @@
 
     <div class="composer">
       <textarea id="new-prompt" placeholder="Décris la mission à confier à l'agent…"></textarea>
+
+      <div class="files-box">
+        <div class="files-head">
+          <span>Fichiers partagés (PDF, photos, texte)</span>
+          <button class="refresh-btn" id="files-refresh-btn" title="Rafraîchir">⟳</button>
+        </div>
+        <input type="file" id="file-input" accept=".txt,.md,.csv,.json,.log,.pdf,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff" hidden>
+        <button class="btn btn-ghost files-upload-btn" id="files-upload-btn">＋ Ajouter un fichier</button>
+        <div class="files-list" id="files-list"></div>
+        <div class="files-hint">Clique un nom pour l'insérer dans la mission ci-dessus (ex: "résume rapport.pdf").</div>
+      </div>
+
       <div class="composer-row">
         <select id="new-provider" class="provider-select">
           <option value="mistral">Mistral</option>
@@ -465,6 +528,7 @@
         <button class="refresh-btn" id="status-refresh-btn" title="Revérifier les clés API">⟳</button>
       </div>
       <div class="provider-status-row" id="provider-status-row"></div>
+      <div class="status-error-box" id="provider-status-error" hidden></div>
       <div class="composer-row create-row">
         <button class="btn btn-primary" id="create-btn">Créer la mission</button>
       </div>
@@ -564,7 +628,11 @@ async function refreshModelOptions() {
     // modèle par défaut configuré côté serveur plutôt que de bloquer la création.
     modelSelect.innerHTML = `<option value="">Modèle par défaut du serveur</option>`;
     modelSelect.disabled = false;
-    hint.textContent = `Liste des modèles indisponible pour ${PROVIDER_LABEL[provider] || provider} (clé API absente ou invalide ?). La mission utilisera le modèle par défaut du serveur.`;
+    // On affiche le détail technique renvoyé par le backend (message exact du
+    // SDK / de l'API) : sans lui, impossible de distinguer une clé absente
+    // d'une clé au mauvais format, d'un quota dépassé ou d'un réseau coupé.
+    hint.innerHTML = `Liste des modèles indisponible pour ${escapeHtml(PROVIDER_LABEL[provider] || provider)}. La mission utilisera le modèle par défaut du serveur.
+      <details class="error-details"><summary>Voir le détail technique</summary><pre>${escapeHtml(e.message)}</pre></details>`;
     hint.className = "model-hint error";
   }
 }
@@ -687,14 +755,38 @@ function statusChip(name, state, info) {
   let title = "Vérification en cours…";
   if (state === "ok") title = `${info.model_count} modèle${info.model_count > 1 ? "s" : ""} disponible${info.model_count > 1 ? "s" : ""}`;
   if (state === "fail") title = info.error || "Clé API invalide ou provider injoignable";
-  return `<span class="status-chip ${state}" title="${escapeHtml(title)}"><span class="dot"></span>${escapeHtml(label)}</span>`;
+  // Les chips en échec sont cliquables : le détail technique complet (souvent
+  // long, et tronqué dans un tooltip) s'affiche sous la rangée de statuts.
+  const clickable = state === "fail"
+    ? ` role="button" tabindex="0" data-provider="${escapeHtml(name)}" data-error="${escapeHtml(title)}"`
+    : "";
+  return `<span class="status-chip ${state}" title="${escapeHtml(title)}"${clickable}><span class="dot"></span>${escapeHtml(label)}</span>`;
 }
+
+function showStatusError(providerName, message) {
+  const box = document.getElementById("provider-status-error");
+  box.innerHTML = `<strong>${escapeHtml(PROVIDER_LABEL[providerName] || providerName)}</strong> — détail de l'erreur :<pre>${escapeHtml(message)}</pre>`;
+  box.hidden = false;
+}
+
+// Délégation d'événement : les chips sont recréés à chaque vérification, donc
+// on écoute sur la rangée parente plutôt que sur chaque chip.
+document.getElementById("provider-status-row").addEventListener("click", (e) => {
+  const chip = e.target.closest(".status-chip.fail");
+  if (chip) showStatusError(chip.dataset.provider, chip.dataset.error);
+});
+document.getElementById("provider-status-row").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const chip = e.target.closest(".status-chip.fail");
+  if (chip) { e.preventDefault(); showStatusError(chip.dataset.provider, chip.dataset.error); }
+});
 
 async function checkProviderStatus() {
   const row = document.getElementById("provider-status-row");
   const btn = document.getElementById("status-refresh-btn");
   const names = Object.keys(PROVIDER_LABEL);
   row.innerHTML = names.map(name => statusChip(name, "checking")).join("");
+  document.getElementById("provider-status-error").hidden = true;
   btn.classList.add("spinning");
   try {
     // Un seul appel : le backend vérifie les 4 providers EN MÊME TEMPS
@@ -752,6 +844,89 @@ async function api(path, options = {}) {
   if (res.status === 204) return null;
   return res.json();
 }
+
+// --- Fichiers partagés (upload PDF/photos/texte pour l'agent) ---------------
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+}
+
+async function loadFiles() {
+  const listEl = document.getElementById("files-list");
+  try {
+    const files = await api("/files/");
+    if (files.length === 0) {
+      listEl.innerHTML = "";
+      return;
+    }
+    listEl.innerHTML = files.map(f => `
+      <span class="file-chip" data-name="${escapeHtml(f.filename)}" title="${escapeHtml(f.filename)} — ${formatFileSize(f.size_bytes)}">
+        <span class="file-chip-name">${escapeHtml(f.filename)}</span>
+        <button class="file-chip-del" data-name="${escapeHtml(f.filename)}" title="Supprimer">✕</button>
+      </span>
+    `).join("");
+  } catch (e) {
+    listEl.innerHTML = "";
+  }
+}
+
+document.getElementById("files-list").addEventListener("click", async (e) => {
+  const delBtn = e.target.closest(".file-chip-del");
+  if (delBtn) {
+    e.stopPropagation();
+    try {
+      await api(`/files/${encodeURIComponent(delBtn.dataset.name)}`, { method: "DELETE" });
+      await loadFiles();
+      showToast("Fichier supprimé.");
+    } catch (err) {
+      showToast("Erreur : " + err.message, true);
+    }
+    return;
+  }
+  const chip = e.target.closest(".file-chip");
+  if (chip) {
+    const ta = document.getElementById("new-prompt");
+    const name = chip.dataset.name;
+    ta.value = ta.value ? `${ta.value.trim()} ${name}` : `Analyse le fichier ${name}`;
+    ta.focus();
+  }
+});
+
+document.getElementById("files-upload-btn").addEventListener("click", () => {
+  document.getElementById("file-input").click();
+});
+
+document.getElementById("file-input").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const btn = document.getElementById("files-upload-btn");
+  btn.disabled = true;
+  btn.textContent = "Envoi en cours…";
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    // Ne pas utiliser api() ici : elle force Content-Type: application/json,
+    // alors qu'un upload multipart doit laisser le navigateur fixer son
+    // propre Content-Type (avec la boundary générée automatiquement).
+    const res = await fetch("/files/upload", { method: "POST", body: formData });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error(j.detail || res.statusText);
+    }
+    await loadFiles();
+    showToast("Fichier ajouté : " + file.name);
+  } catch (err) {
+    showToast("Erreur : " + err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "＋ Ajouter un fichier";
+    e.target.value = "";
+  }
+});
+
+document.getElementById("files-refresh-btn").addEventListener("click", () => loadFiles());
 
 async function loadMissions({ silent = false } = {}) {
   const btn = document.getElementById("refresh-btn");
@@ -953,6 +1128,7 @@ document.getElementById("status-refresh-btn").addEventListener("click", () => ch
 loadProviders();
 checkProviderStatus();
 loadMissions();
+loadFiles();
 </script>
 </body>
 </html>

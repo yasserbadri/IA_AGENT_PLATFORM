@@ -58,6 +58,34 @@ class OpenAICompatibleProvider:
     def to_tool_result_entry(self, tool_call: NormalizedToolCall, output: str) -> dict:
         return {"role": "tool", "tool_call_id": tool_call.id, "content": output}
 
+    async def describe_image(self, image_b64: str, mime_type: str) -> str:
+        """Décrit/transcrit une image via le même modèle de chat, en passant
+        une image data-URL dans le contenu du message (format vision commun
+        à OpenAI, xAI/Grok, et à toute API compatible). Si le modèle courant
+        ne supporte pas la vision, l'appel échoue et l'appelant (read_file)
+        retombe simplement sur l'OCR seul."""
+        response = await self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": (
+                                "Décris cette image en détail et en français, pour quelqu'un "
+                                "qui ne peut pas la voir. Si elle contient du texte, "
+                                "retranscris-le intégralement."
+                            ),
+                        },
+                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}},
+                    ],
+                }
+            ],
+            max_tokens=600,
+        )
+        return response.choices[0].message.content or ""
+
     async def list_models(self) -> list[str]:
         """Interroge GET /models avec la clé API configurée pour ce provider :
         la liste reflète exactement ce que cette clé peut utiliser (au lieu

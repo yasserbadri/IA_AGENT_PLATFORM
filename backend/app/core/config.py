@@ -31,10 +31,14 @@ class Settings(BaseSettings):
     XAI_API_KEY: str = ""
     XAI_MODEL: str = "grok-4-0709"
 
-    # Google Gemini (aistudio.google.com), via la couche de compatibilité
-    # OpenAI officielle de Google (mêmes SDK/format que ci-dessus, endpoint
-    # différent) — voir ai.google.dev/gemini-api/docs/openai. Vérifie le nom
-    # de modèle courant sur ai.google.dev/gemini-api/docs/models.
+    # Google Gemini (aistudio.google.com), via le SDK natif officiel
+    # `google-genai`. On n'utilise PAS la couche de compatibilité OpenAI ici,
+    # contrairement à OpenAI/Grok ci-dessus : depuis 2026 AI Studio ne génère
+    # plus que des clés "Authorization" (préfixe "AQ."), rejetées par
+    # l'endpoint OpenAI-compatible de Google. Le SDK natif accepte aussi bien
+    # ces clés AQ. que les anciennes clés AIza... — voir
+    # ai.google.dev/gemini-api/docs/api-key et app/agent/providers/gemini_provider.py.
+    # Vérifie le nom de modèle courant sur ai.google.dev/gemini-api/docs/models.
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.7-flash"
 
@@ -45,10 +49,14 @@ class Settings(BaseSettings):
     # agents LLM plutôt que pour un moteur de recherche humain classique)
     TAVILY_API_KEY: str = ""
 
-    # Répertoire sandboxé où l'outil read_file va chercher ses fichiers.
+    # Répertoire sandboxé où l'outil read_file va chercher ses fichiers, et où
+    # POST /files/upload dépose les fichiers envoyés depuis l'interface.
     # Chemin relatif : résolu depuis le dossier de travail du process
     # (WORKDIR /app dans le conteneur Docker -> backend/data/ sur ta machine).
     FILES_DIR: str = "data"
+
+    # Taille max d'un fichier uploadé via POST /files/upload, en Mo.
+    MAX_UPLOAD_SIZE_MB: int = 20
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

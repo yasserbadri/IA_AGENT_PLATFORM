@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api.agent import router as agent_router
+from app.api.files import router as files_router
 from app.api.health import router as health_router
 from app.api.missions import router as missions_router
 from app.api.providers import router as providers_router
@@ -15,6 +16,7 @@ app.include_router(health_router, tags=["health"])
 app.include_router(missions_router)
 app.include_router(agent_router)
 app.include_router(providers_router)
+app.include_router(files_router)
 
 # Interface "Mission Control" : une page unique HTML/CSS/JS, sans framework ni
 # build step, servie directement par FastAPI à /ui (ne touche pas à / ni à l'API).

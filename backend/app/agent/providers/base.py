@@ -36,3 +36,9 @@ class LLMProvider(Protocol):
     def to_assistant_history_entry(self, raw_message: Any) -> dict: ...
 
     def to_tool_result_entry(self, tool_call: NormalizedToolCall, output: str) -> dict: ...
+
+    # Optionnel : analyse d'image par un modèle de vision, utilisé par l'outil
+    # read_file quand la mission porte sur une photo uploadée (voir
+    # app/agent/tools/read_file.py). Pas tous les providers/modèles ne
+    # supportent la vision : absent -> read_file se rabat sur l'OCR seul.
+    # async def describe_image(self, image_b64: str, mime_type: str) -> str: ...

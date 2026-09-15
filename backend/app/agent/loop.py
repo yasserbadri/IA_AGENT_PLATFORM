@@ -45,7 +45,7 @@ async def run_agent_loop(
 
         for tool_call in turn.tool_calls:
             try:
-                output = await execute_tool(tool_call.name, tool_call.arguments)
+                output = await execute_tool(tool_call.name, tool_call.arguments, provider=llm)
             except Exception as exc:  # noqa: BLE001 — on veut renvoyer l'erreur au LLM, pas planter
                 output = f"Erreur lors de l'exécution de l'outil: {exc}"
 

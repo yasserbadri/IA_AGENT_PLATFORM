@@ -70,6 +70,34 @@ class MistralProvider:
     def to_tool_result_entry(self, tool_call: NormalizedToolCall, output: str) -> dict:
         return {"role": "tool", "name": tool_call.name, "content": output, "tool_call_id": tool_call.id}
 
+    async def describe_image(self, image_b64: str, mime_type: str) -> str:
+        """Décrit/transcrit une image via le SDK Mistral (même format de
+        contenu "image_url" que l'API OpenAI). Ne fonctionne qu'avec un
+        modèle Mistral supportant la vision (ex: pixtral-*) — si le modèle
+        courant ne la supporte pas, l'appel échoue et l'appelant (read_file)
+        retombe simplement sur l'OCR seul."""
+        response = await self._client.chat.complete_async(
+            model=self._model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": (
+                                "Décris cette image en détail et en français, pour quelqu'un "
+                                "qui ne peut pas la voir. Si elle contient du texte, "
+                                "retranscris-le intégralement."
+                            ),
+                        },
+                        {"type": "image_url", "image_url": f"data:{mime_type};base64,{image_b64}"},
+                    ],
+                }
+            ],
+            max_tokens=600,
+        )
+        return _extract_text(response.choices[0].message.content)
+
     async def list_models(self) -> list[str]:
         """Interroge GET /v1/models avec la clé API configurée. Ne garde que
         les modèles qui supportent à la fois le chat et le function calling

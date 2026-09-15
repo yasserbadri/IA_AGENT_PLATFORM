@@ -15,11 +15,11 @@ import asyncio
 import time
 
 from app.agent.providers.base import LLMProvider
+from app.agent.providers.gemini_provider import GeminiProvider
 from app.agent.providers.mistral_provider import MistralProvider
 from app.agent.providers.openai_compatible import OpenAICompatibleProvider
 from app.core.config import settings
 
-GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 XAI_BASE_URL = "https://api.x.ai/v1"
 
 _PROVIDERS: dict[tuple[str, str | None], LLMProvider] = {}
@@ -43,6 +43,42 @@ DEFAULT_MODELS: dict[str, str] = {
 _MODELS_CACHE: dict[str, tuple[float, list[str]]] = {}
 _MODELS_CACHE_TTL_SECONDS = 300
 
+# Variable d'environnement portant la clé API de chaque provider, utilisée
+# pour produire un message d'erreur explicite quand elle est absente plutôt
+# que de laisser le SDK échouer avec une erreur d'authentification obscure.
+_API_KEY_ENV_VARS: dict[str, str] = {
+    "mistral": "MISTRAL_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "grok": "XAI_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+}
+
+
+class MissingAPIKeyError(RuntimeError):
+    """Levée quand la clé API d'un provider n'est pas configurée du tout.
+
+    Distinguer ce cas d'une clé présente mais refusée change le diagnostic
+    côté UI : ici il n'y a rien à débugger côté réseau ou quota, il manque
+    simplement une ligne dans le .env.
+    """
+
+
+def _api_key_for(name: str) -> str:
+    return {
+        "mistral": settings.MISTRAL_API_KEY,
+        "openai": settings.OPENAI_API_KEY,
+        "grok": settings.XAI_API_KEY,
+        "gemini": settings.GEMINI_API_KEY,
+    }.get(name, "")
+
+
+def ensure_api_key_configured(name: str) -> None:
+    if not _api_key_for(name).strip():
+        raise MissingAPIKeyError(
+            f"Clé API absente : la variable {_API_KEY_ENV_VARS[name]} n'est pas renseignée "
+            f"dans le fichier .env. Ajoute-la puis redémarre le serveur."
+        )
+
 
 def default_model_for(name: str) -> str:
     try:
@@ -63,9 +99,7 @@ def _build_provider(name: str, model: str | None) -> LLMProvider:
             "grok", settings.XAI_API_KEY, model or settings.XAI_MODEL, base_url=XAI_BASE_URL
         )
     if name == "gemini":
-        return OpenAICompatibleProvider(
-            "gemini", settings.GEMINI_API_KEY, model or settings.GEMINI_MODEL, base_url=GEMINI_BASE_URL
-        )
+        return GeminiProvider(model=model)
     raise ValueError(
         f"Provider LLM inconnu: '{name}'. Providers disponibles: {', '.join(AVAILABLE_PROVIDERS)}."
     )
@@ -82,9 +116,12 @@ def get_provider(name: str | None = None, model: str | None = None) -> LLMProvid
 async def list_available_models(name: str, *, use_cache: bool = True) -> list[str]:
     """Modèles réellement utilisables par la clé API configurée pour ce
     provider, récupérés en direct via GET /models (ou l'équivalent SDK) —
-    plutôt qu'une liste statique qui deviendrait vite fausse. Lève l'erreur
-    du SDK sous-jacent (clé invalide, réseau...) telle quelle ; à l'appelant
-    de la traduire en réponse HTTP propre."""
+    plutôt qu'une liste statique qui deviendrait vite fausse. Lève
+    MissingAPIKeyError si la clé n'est pas configurée, sinon l'erreur du SDK
+    sous-jacent (clé invalide, réseau...) telle quelle ; à l'appelant de la
+    traduire en réponse HTTP propre."""
+    ensure_api_key_configured(name)
+
     if use_cache:
         cached = _MODELS_CACHE.get(name)
         if cached is not None and (time.monotonic() - cached[0]) < _MODELS_CACHE_TTL_SECONDS:
@@ -129,6 +166,8 @@ async def test_models(name: str, models: list[str] | None = None) -> list["Model
     complétion va réellement aboutir (modèle déprécié, accès restreint sur ce
     compte, etc). Lancés avec une concurrence bornée pour éviter le rate
     limit côté provider."""
+    ensure_api_key_configured(name)
+
     if models is None:
         models = await list_available_models(name)
 

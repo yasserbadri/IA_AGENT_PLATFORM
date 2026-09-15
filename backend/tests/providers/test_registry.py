@@ -4,6 +4,7 @@ import pytest
 
 from app.agent import providers as providers_module
 from app.agent.providers import AVAILABLE_PROVIDERS, get_provider
+from app.agent.providers.gemini_provider import GeminiProvider
 from app.agent.providers.mistral_provider import MistralProvider
 from app.agent.providers.openai_compatible import OpenAICompatibleProvider
 
@@ -42,11 +43,16 @@ def test_get_provider_grok_uses_xai_base_url():
     assert kwargs["base_url"] == "https://api.x.ai/v1"
 
 
-def test_get_provider_gemini_uses_google_base_url():
-    with patch("app.agent.providers.openai_compatible.AsyncOpenAI") as mock_client:
-        get_provider("gemini")
+def test_get_provider_gemini_uses_native_sdk_with_configured_key():
+    # Gemini n'utilise plus la couche de compatibilité OpenAI (voir
+    # gemini_provider.py : les clés "AQ." générées par défaut depuis 2026 ne
+    # sont pas acceptées par l'endpoint OpenAI-compatible) mais le SDK natif
+    # google-genai, qui gère les deux formats de clé de façon transparente.
+    with patch("app.agent.providers.gemini_provider.genai.Client") as mock_client:
+        provider = get_provider("gemini")
+    assert isinstance(provider, GeminiProvider)
     _, kwargs = mock_client.call_args
-    assert "generativelanguage.googleapis.com" in kwargs["base_url"]
+    assert kwargs["api_key"] == providers_module.settings.GEMINI_API_KEY
 
 
 def test_get_provider_unknown_name_raises():
